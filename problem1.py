@@ -2,7 +2,7 @@
 Problem 1: BoW + LogisticRegression pipeline with cross-validated hyperparameter search.
 
 Edit the CONFIG section and PARAM_GRID to try different settings.
-Run:  python problem1_pipeline.py
+Run:  python problem1.py
 """
 import numpy as np
 import pandas as pd
