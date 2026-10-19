@@ -1,7 +1,7 @@
 """
 Problem 1: BoW + LogisticRegression pipeline with cross-validated hyperparameter search.
 
-Edit the CONFIG section and PARAM_GRID to try different settings.
+Edit the Setup section and PARAM_GRID to try different settings.
 Run:  python problem1.py
 """
 import numpy as np
@@ -13,6 +13,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, StratifiedGroupKFold
 
+# Setup
 DATA_DIR = "data_readinglevel"
 N_FOLDS = 5
 RANDOM_STATE = 0
@@ -38,25 +39,32 @@ pipe = Pipeline([
     ("clf", LogisticRegression(solver="liblinear", max_iter=2000)),
 ])
 
-# HYPERPARAMETER GRID  (edit freely; each dict is a sub-grid)
-# Use "bow": [...] to swap whole vectorizers, or "bow__<param>" to tweak one.
+# HYPERPARAMETER GRID  (each dict is a sub-grid)
+# Use "bow": [...] to swap whole vectorizers, or "bow__<param>" to tweak one
+# Every key is "<pipeline step name>__<parameter name>"
 C_GRID = np.logspace(-3, 2, 11)
 
 PARAM_GRID = [
     # Binary counts, lowercase
     {
-        "bow": [CountVectorizer(lowercase=True, binary=True)],
-        "bow__min_df": [2, 5],
-        "bow__ngram_range": [(1, 1), (1, 2)],
-        "clf__penalty": ["l2", "l1"],
+        "bow": [CountVectorizer()],
+        "bow__lowercase": [True],
+        "bow__binary": [True],
+        "bow__stop_words": [None],
+        "bow__min_df": [2, 5, 10, 20],
+        "bow__ngram_range": [(1, 1), (1, 2), (1, 3)],
+        "clf__penalty": ["l2"],
         "clf__C": C_GRID,
     },
     # TF-IDF
     {
-        "bow": [TfidfVectorizer(lowercase=True, sublinear_tf=True)],
-        "bow__min_df": [2, 5],
-        "bow__ngram_range": [(1, 1), (1, 2)],
-        "clf__penalty": ["l2", "l1"],
+        "bow": [TfidfVectorizer()],
+        "bow__lowercase": [True],
+        "bow__sublinear_tf": [True],
+        "bow__stop_words": [None],
+        "bow__min_df": [2, 5, 10, 20],
+        "bow__ngram_range": [(1, 1), (1, 2), (1, 3)],
+        "clf__penalty": ["l2"],
         "clf__C": C_GRID,
     },
 ]
