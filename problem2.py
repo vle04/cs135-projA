@@ -147,6 +147,53 @@ if HAVE_EMB:
              "clf__max_depth": [3]},
             "clf__max_iter",
         ),
+        # Reduce embedding dimension (768 -> k) before LR: fewer params, less overfitting
+        # "emb_pca_lr": (
+        #     Pipeline([("pre", ColumnTransformer([("emb", StandardScaler(), EMB_COLS)])),
+        #               ("pca", PCA(random_state=RANDOM_STATE)),
+        #               ("clf", LogisticRegression(max_iter=5000))]),
+        #     {"pca__n_components": [16, 32, 64, 128, 256],
+        #      "clf__C": [0.001, 0.01, 0.1, 1]},
+        #     "pca__n_components",
+        # ),
+        # Embeddings + numeric features, linear model
+        "emb_num_lr": (
+            make_pipe(False, True, True, LogisticRegression(max_iter=5000)),
+            {"clf__C": np.logspace(-4, 0, 9)},
+            "clf__C",
+        ),
+        # # Small neural net on embeddings; alpha = L2 penalty (bigger = simpler model)
+        # "emb_mlp": (
+        #     make_pipe(False, False, True,
+        #               MLPClassifier(early_stopping=True, max_iter=500,
+        #                             random_state=RANDOM_STATE)),
+        #     {"clf__alpha": np.logspace(-2, 2, 5),
+        #      "clf__hidden_layer_sizes": [(64,), (256,)]},
+        #     "clf__alpha",
+        # ),
+        # Wider search for gradient boosting on numeric + embeddings
+        "numeric_emb_hgb_tuned": (
+            make_pipe(False, True, True,
+                      HistGradientBoostingClassifier(random_state=RANDOM_STATE)),
+            {"clf__max_iter": [25, 50, 100, 200, 400],
+             "clf__learning_rate": [0.05],
+             "clf__max_depth": [2, 3, 5],
+             "clf__min_samples_leaf": [20, 50]},
+            "clf__max_iter",
+        ),
+        # # Average the probabilities of a linear model and a boosted model
+        # "ensemble_lr_hgb": (
+        #     VotingClassifier([
+        #         ("lr", make_pipe(False, True, True, LogisticRegression(max_iter=5000))),
+        #         ("hgb", make_pipe(False, True, True,
+        #                           HistGradientBoostingClassifier(
+        #                               learning_rate=0.05, max_depth=3,
+        #                               random_state=RANDOM_STATE))),
+        #     ], voting="soft"),
+        #     {"lr__clf__C": [0.001, 0.003, 0.01, 0.03, 0.1],
+        #      "hgb__clf__max_iter": [50, 100, 200]},
+        #     "lr__clf__C",
+        # ),
     })
 else:
     print("NOTE: no embeddings configured (EMB_TRAIN/EMB_TEST); skipping embedding experiments.")
